@@ -1,12 +1,14 @@
 import java.util.concurrent.ThreadLocalRandom;
 
 public class Doctor implements Runnable {
+    
     private int doctorId;
     private WaitingRoom waitingRoom;
     private TreatmentRoom treatmentRoom;
     private Hospital hospital;
 
-    public Doctor(int doctorId, WaitingRoom waitingRoom,TreatmentRoom treatmentRoom, Hospital hospital) {
+    public Doctor(int doctorId, WaitingRoom waitingRoom,TreatmentRoom treatmentRoom, Hospital hospital){
+        
         this.doctorId=doctorId;
         this.waitingRoom=waitingRoom;
         this.treatmentRoom=treatmentRoom;
@@ -17,9 +19,11 @@ public class Doctor implements Runnable {
         try {
             while(!Thread.currentThread().isInterrupted()){
                 Patient patient=waitingRoom.getPatient();
+                
                 if(patient==null){
                   break;
                 }
+                
                 System.out.println("Doctor "+ doctorId +" is assigned to P"+patient.getId());
                 treatPatient(patient);
                 System.out.println("Doctor "+doctorId +" is now available");
@@ -31,6 +35,7 @@ public class Doctor implements Runnable {
     }
 
     private void treatPatient(Patient patient) throws InterruptedException{
+        
         System.out.println("Doctor "+doctorId +" is trying to acquire a treatment room");
         boolean roomAvailable=treatmentRoom.tryAcquire(3000);
 
