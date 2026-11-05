@@ -3,14 +3,15 @@ import java.util.Scanner;
 public class Main {
     public static void main(String[] args) {
         Scanner input = new Scanner(System.in);
+
         System.out.print("Enter waiting room capacity: ");
-        int capacity = input.nextInt();
+        int capacity = InputValidator.getValidNumber(input);
 
         System.out.print("Enter number of doctors: ");
-        int doctors = input.nextInt();
+        int doctors = InputValidator.getValidNumber(input);
 
         System.out.print("Enter number of patients: ");
-        int patients = input.nextInt();
+        int patients = InputValidator.getValidNumber(input);
 
         Hospital hospital = new Hospital(capacity, doctors, patients);
 
