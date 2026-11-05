@@ -4,89 +4,78 @@ import java.util.ArrayDeque;
 public class WaitingRoom {
 
     private Queue<Patient> queue;
-
     private Semaphore empty;
     private Semaphore full;
     private Semaphore mutex;
-
+    private boolean closed = false;
 
     public WaitingRoom(int capacity) {
-
         queue = new ArrayDeque<>();
-
         empty = new Semaphore(capacity);
         full = new Semaphore(0);
         mutex = new Semaphore(1);
     }
 
+    public void addPatient(Patient patient) throws InterruptedException {
+        boolean seatAvailable;
+        mutex.acquire();
+        try {
+            seatAvailable = empty.tryAcquire(0);
+            if (!seatAvailable) {
+                System.out.println("The waiting room is full.");
+                System.out.println("P" + patient.getId() + " is waiting outside for an available seat.");
+            }
+        } finally {
+            mutex.release();
+        }
 
-
-    //Patient enters the waiting room
-    public void addPatient(Patient patient)
-            throws InterruptedException {
-
-        //Try to get an empty seat immediately => permit--
-        if (!empty.tryAcquire(0)) {
-
-            System.out.println("The waiting room is full.");
-            System.out.println(  "P" + patient.getId()  + " is waiting outside for an available seat.");
-
-            //Wait until a seat becomes available
+        if (!seatAvailable) {
             empty.acquire();
         }
 
 
-
-        //for protect the queue
+        mutex.acquire();
         try {
-            mutex.acquire();
-        } catch (InterruptedException e) {
-            empty.release();
-            throw e;
-        }
-
-
-        try {
+            if (closed) {
+                empty.release();
+                return;
+            }
             queue.add(patient);
-
-            System.out.println("P" + patient.getId()+ " entered the waiting room.");
-
-            } 
-        finally {
+            System.out.println("P" + patient.getId() + " entered the waiting room.");
+        } finally {
             mutex.release();
         }
 
-
-        //Notify doctors that a patient is available
         full.release();
     }
 
-    //Doctor takes a patient from the waiting room
-    public Patient getPatient()
-            throws InterruptedException {
-
-        //Wait until a patient is available
+    public Patient getPatient() throws InterruptedException {
         full.acquire();
 
+        mutex.acquire();
         try {
-            mutex.acquire();
-        } catch (InterruptedException e) {
-            full.release();
-            throw e;
+            if (closed && queue.isEmpty()) {
+                return null;
+            }
+            Patient patient = queue.remove();
+
+            empty.release();
+            return patient;
+        } finally {
+            mutex.release();
         }
+    }
 
-        Patient patient;
-
+    public void close(int numberOfDoctors) throws InterruptedException {
+        mutex.acquire();
         try {
-            patient = queue.remove();
-        } 
-        finally {
+            closed = true;
+        } finally {
             mutex.release();
         }
 
-        //A seat becomes available
-        empty.release();
-
-        return patient;
+        for (int i = 0; i < numberOfDoctors; i++) {
+            full.release();
+        }
     }
 }
