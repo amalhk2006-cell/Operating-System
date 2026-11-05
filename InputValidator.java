@@ -13,7 +13,7 @@ public class InputValidator {
             int value = number.nextInt();
 
             if (value < 1) {
-                System.out.println("Error: Number can be less than 1.");
+                System.out.println("Error: Number can't be less than 1.");
                 continue;
 
             }
