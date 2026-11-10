@@ -4,6 +4,7 @@ import java.util.ArrayDeque;
 public class WaitingRoom {
 
     private Queue<Patient> queue;
+    
     private Semaphore empty;
     private Semaphore full;
     private Semaphore mutex;
